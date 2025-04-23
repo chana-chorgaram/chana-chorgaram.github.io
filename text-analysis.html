@@ -1,0 +1,210 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text Analysis</title>
+    <style>
+        body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(135deg, #3f68d8, #3f68d8);
+        color: #333;
+    }
+    
+        .container {
+            flex: 1;
+            max-width: 1000px;
+            margin: auto;
+            background: rgb(253, 210, 255);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+        }
+
+        textarea {
+        display: block;
+        margin: 20px auto;
+        width: 90%;
+        max-width: 700px;
+        height: 250px;
+        padding: 15px;
+        font-size: 1.05em;
+        border-radius: 10px;
+        border: 2px solid #ff88cc;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        resize: vertical;
+        box-sizing: border-box;
+    }
+
+    
+        button {
+        padding: 10px 20px;
+        font-size: 1em;
+        border: none;
+        border-radius: 8px;
+        background: #293304;
+        color: white;
+        cursor: pointer;
+        margin-top: 10px;
+        }
+        button:hover {
+        background: #ff4f6e;
+        }
+        .output-section {
+        margin-top: 20px;
+        text-align: left;
+        background: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        .output-section h3 {
+        margin-top: 0;
+        }
+        .grouped-output {
+        margin-bottom: 10px;
+        }
+        @media (max-width: 768px) {
+        textarea {
+            height: 200px;
+            font-size: 0.95em;
+        }
+        button {
+            width: 100%;
+            font-size: 1em;
+        }
+    }
+
+    p a {
+    color: white;
+    text-decoration: underline;
+    }
+    
+    
+    </style>
+    </head>
+    <body>
+    <div class="container">
+        <h1>Text Analysis Tool</h1>
+        <p>Paste or write your text (even over 10,000 words) in the text box below, then click "Analyze Text".</p>
+        <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+        <br />
+        <button id="analyzeBtn">Analyze Text</button>
+        
+        <div id="analysisOutput" class="output-section">
+        <!-- Analysis results will appear here -->
+        </div>
+    </div>
+
+    <div style="text-align: center; margin: 20px 0;">
+        <p>Back to <a href="index.html">My Personal Website</a></p>
+      </div>
+      
+
+    <script>
+        // Define lists for pronouns, prepositions, and indefinite articles
+        const pronouns = ["i", "me", "my", "mine", "you", "your", "yours", "he", "him", "his", "she", "her", "hers", "it", "its", "we", "us", "our", "ours", "they", "them", "their", "theirs"];
+        const prepositions = ["about", "above", "across", "after", "against", "along", "among", "around", "at", "before", "behind", "below", "beneath", "beside", "between", "beyond", "but", "by", "concerning", "despite", "down", "during", "except", "for", "from", "in", "inside", "into", "like", "near", "of", "off", "on", "onto", "out", "outside", "over", "past", "regarding", "since", "through", "throughout", "to", "toward", "under", "underneath", "until", "up", "upon", "with", "within", "without"];
+        const indefiniteArticles = ["a", "an"];
+
+        // Utility function to count occurrences based on a regex match
+        function countMatches(text, regex) {
+        const matches = text.match(regex);
+        return matches ? matches.length : 0;
+        }
+
+        // Function to tokenize text into words
+        function tokenize(text) {
+        // Split by whitespace and remove empty tokens; convert to lowercase for comparison
+        return text.split(/\s+/).filter(token => token.trim() !== "").map(token => token.toLowerCase());
+        }
+
+        // Main function to analyze text
+        function analyzeText() {
+        const text = document.getElementById("inputText").value;
+        let output = "";
+
+        // Calculate counts
+        const letterCount = countMatches(text, /[a-zA-Z]/g);
+        const wordCount = tokenize(text).length;
+        const spaceCount = countMatches(text, / /g);
+        const newlineCount = countMatches(text, /\n/g);
+        // Special symbols: any character that's not a letter, number, or whitespace.
+        const specialSymbolCount = countMatches(text, /[^a-zA-Z0-9\s]/g);
+
+        output += `<h3>General Text Statistics</h3>`;
+        output += `<p><strong>Letters:</strong> ${letterCount}</p>`;
+        output += `<p><strong>Words:</strong> ${wordCount}</p>`;
+        output += `<p><strong>Spaces:</strong> ${spaceCount}</p>`;
+        output += `<p><strong>Newlines:</strong> ${newlineCount}</p>`;
+        output += `<p><strong>Special Symbols:</strong> ${specialSymbolCount}</p>`;
+
+        // Tokenize the text for further analysis
+        const tokens = tokenize(text);
+
+        // Count pronouns
+        let pronounCounts = {};
+        tokens.forEach(token => {
+            if (pronouns.includes(token)) {
+            pronounCounts[token] = (pronounCounts[token] || 0) + 1;
+            }
+        });
+        
+        output += `<h3>Pronoun Counts</h3>`;
+        if (Object.keys(pronounCounts).length === 0) {
+            output += `<p>No pronouns found.</p>`;
+        } else {
+            for (let pronoun in pronounCounts) {
+            output += `<div class="grouped-output"><strong>${pronoun}:</strong> ${pronounCounts[pronoun]}</div>`;
+            }
+        }
+
+        // Count prepositions
+        let prepositionCounts = {};
+        tokens.forEach(token => {
+            if (prepositions.includes(token)) {
+            prepositionCounts[token] = (prepositionCounts[token] || 0) + 1;
+            }
+        });
+        
+        output += `<h3>Preposition Counts</h3>`;
+        if (Object.keys(prepositionCounts).length === 0) {
+            output += `<p>No prepositions found.</p>`;
+        } else {
+            for (let prep in prepositionCounts) {
+            output += `<div class="grouped-output"><strong>${prep}:</strong> ${prepositionCounts[prep]}</div>`;
+            }
+        }
+
+        // Count indefinite articles
+        let articleCounts = {};
+        tokens.forEach(token => {
+            if (indefiniteArticles.includes(token)) {
+            articleCounts[token] = (articleCounts[token] || 0) + 1;
+            }
+        });
+        
+        output += `<h3>Indefinite Article Counts</h3>`;
+        if (Object.keys(articleCounts).length === 0) {
+            output += `<p>No indefinite articles found.</p>`;
+        } else {
+            for (let article in articleCounts) {
+            output += `<div class="grouped-output"><strong>${article}:</strong> ${articleCounts[article]}</div>`;
+            }
+        }
+
+        // Print output to the page
+        document.getElementById("analysisOutput").innerHTML = output;
+        }
+
+        // Set up button event listener
+        document.getElementById("analyzeBtn").addEventListener("click", analyzeText);
+    </script>
+    </body>
+    </html>
