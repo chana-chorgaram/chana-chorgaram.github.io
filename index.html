@@ -248,6 +248,8 @@
           objectType = "My birthplace desc";
         else if (element.closest(".education") && (objectType === "p" || objectType === "span" || objectType === "b"))
           objectType = "Education";
+        else 
+          objectType = "Unknown";
 
         const timestamp = new Date().toISOString();
         console.log(`${timestamp}, click, ${objectType}`);
